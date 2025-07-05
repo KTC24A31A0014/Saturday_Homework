@@ -6,45 +6,68 @@ public class Enemy : MonoBehaviour
 {
 	[SerializeField] private Player player_ = null;
 
-	[Header("検知設定")]
-	[SerializeField] private float detectionRange_ = 5.0f;   // 検知距離
-	[SerializeField, Range(0f, 180f)] private float viewAngle_ = 60.0f; // 視野角（度）
-
-	[Header("移動設定")]
-	[SerializeField] private float moveSpeed_ = 2.0f;
+	private const float viewAngle_ = 40f;
+	private const float maxTurnAnglePerFrame_ = 10f;
+	private const float moveAmountPerFrame_ = 0.2f;
 
 	private void Update()
 	{
 		if (player_ == null) return;
 
 		Vector3 toPlayer = player_.transform.position - transform.position;
-		float distance = toPlayer.magnitude;
+		toPlayer.y = 0;
 
-		if (distance > detectionRange_) return;
+		if (toPlayer == Vector3.zero) return;
 
-		// プレイヤーが視野角内にいるかを確認
-		Vector3 forward = transform.forward;
-		Vector3 directionToPlayer = toPlayer.normalized;
-		float angleToPlayer = Vector3.Angle(forward, directionToPlayer);
+		float angleToPlayer = Vector3.Angle(transform.forward, toPlayer.normalized);
 
-		if (angleToPlayer <= viewAngle_ * 0.5f) // 視野角の半分以内にいる
+		if (angleToPlayer <= viewAngle_ * 0.5f)
 		{
-			// プレイヤーに向かって移動
-			directionToPlayer.y = 0;
-			transform.position += directionToPlayer * moveSpeed_ * Time.deltaTime;
+			Quaternion targetRotation = Quaternion.LookRotation(toPlayer);
+			targetRotation = Quaternion.Euler(0, targetRotation.eulerAngles.y, 0);
 
-			// 向きもプレイヤーの方向へ
-			if (directionToPlayer != Vector3.zero)
-			{
-				Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
-				transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5.0f * Time.deltaTime);
-			}
+			Quaternion currentRotation = transform.rotation;
+			currentRotation = Quaternion.Euler(0, currentRotation.eulerAngles.y, 0);
+
+			transform.rotation = Quaternion.RotateTowards(currentRotation, targetRotation, maxTurnAnglePerFrame_);
+
+			transform.position += transform.forward * moveAmountPerFrame_;
+
+			SetTarget(true);
+		}
+		else
+		{
+			SetTarget(false); 
 		}
 	}
 
 	public void SetTarget(bool enable)
 	{
 		MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
-		meshRenderer.materials[0].color = enable ? Color.red : Color.white;
+		if (meshRenderer != null && meshRenderer.materials.Length > 0)
+		{
+			meshRenderer.materials[0].color = enable ? Color.red : Color.white;
+		}
+	}
+
+	private void OnDrawGizmosSelected()
+	{
+		if (player_ == null) return;
+
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawLine(transform.position, player_.transform.position);
+
+		float detectionDistance = 5f;
+		Vector3 forward = transform.forward * detectionDistance;
+
+		Quaternion leftRot = Quaternion.Euler(0, -viewAngle_ * 0.5f, 0);
+		Quaternion rightRot = Quaternion.Euler(0, viewAngle_ * 0.5f, 0);
+
+		Vector3 leftDir = leftRot * forward;
+		Vector3 rightDir = rightRot * forward;
+
+		Gizmos.color = Color.cyan;
+		Gizmos.DrawLine(transform.position, transform.position + leftDir);
+		Gizmos.DrawLine(transform.position, transform.position + rightDir);
 	}
 }
