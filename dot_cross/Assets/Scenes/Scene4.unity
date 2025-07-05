@@ -259,6 +259,18 @@ PrefabInstance:
       propertyPath: player_
       value: 
       objectReference: {fileID: 366286263}
+    - target: {fileID: 4854585050650401170, guid: b4ae565cc4025d1408e552c179170f42, type: 3}
+      propertyPath: moveSpeed_
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4854585050650401170, guid: b4ae565cc4025d1408e552c179170f42, type: 3}
+      propertyPath: viewAngle_
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 4854585050650401170, guid: b4ae565cc4025d1408e552c179170f42, type: 3}
+      propertyPath: detectionRange_
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 9182928693865061513, guid: b4ae565cc4025d1408e552c179170f42, type: 3}
       propertyPath: m_Enabled
       value: 1
